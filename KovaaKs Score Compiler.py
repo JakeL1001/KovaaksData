@@ -66,9 +66,12 @@ with os.scandir(path) as it:
                 toInsert = ["Hits", Hits]
                 df = insert_row(1, df, toInsert)
 
-                toInsert = ["Accuracy", int(Hits) / int(Shots)]
-                df = insert_row(2, df, toInsert)
-
+                try:
+                    toInsert = ["Accuracy", int(Hits) / int(Shots)]
+                    df = insert_row(2, df, toInsert)
+                except ZeroDivisionError:
+                    df = insert_row(2, df, 0)
+                    
                 if (float(damageDone) == 0 and float(damagePossible) == 0):                         # Calculates the Damage Efficiency if the scenario records damage 
                     toInsert = ["Damage Efficiency", "Data not recorded"]
                 else:
