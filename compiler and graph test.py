@@ -14,6 +14,8 @@ from tkinter import ttk
 import numpy as np
 import mplcursors
 import matplotlib.animation as animation
+import datetime as dt
+import os.path
 
 import warnings
 warnings.simplefilter('ignore', np.RankWarning)
@@ -25,6 +27,7 @@ OPTIONS = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
 LARGE_FONT= ("Verdana", 12)
 selection = OPTIONS[0]
+scenariolocation = "LOCATION NOT ENTERED" 
 
 fig = Figure()
 a = fig.add_subplot(111)
@@ -36,9 +39,9 @@ def graph_it(i):
     dotsfake = a.scatter(x=df["Time"],y=df["Score"])
     a.plot(df["Time"],df["Score"], color="blue")
     items = df["Score"].to_numpy()
-    numItems = np.arange(1, len(items)+1, 1)
-    m,b = np.polyfit(numItems, items, 1)
-    a.plot(numItems,m*numItems + b, color="green")
+    numitems = np.arange(1, len(items)+1, 1)
+    m,b = np.polyfit(numitems, items, 1)
+    a.plot(numitems,m*numitems + b, color="green")
     a.set_title("\"" + selection + "\"" + " Scores")
     a.grid()
     fig.autofmt_xdate()
@@ -49,6 +52,7 @@ def graph_it(i):
         sel.annotation.get_bbox_patch().set(fc="white")
         sel.annotation.arrow_patch.set(arrowstyle="simple", fc="white")
     return [dotsfake]
+
 
 class SeaofBTCapp(tk.Tk):
 
@@ -104,20 +108,27 @@ class StartPage(tk.Frame):
         button2.pack()
 """
 
-class PageOne(tk.Frame):
-
+class PageOne(tk.Frame):    
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="Page One!!!", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
+        
         button1 = ttk.Button(self, text="Back to Home",
                             command=lambda: controller.show_frame(StartPage))
         button1.pack()
 
-        button2 = ttk.Button(self, text="Page Two",
-                            command=lambda: controller.show_frame(PageTwo))
+        button2 = ttk.Button(self, text="browse files", command=self.browseFiles)
         button2.pack()
+        
+    def browseFiles(self):
+        global scenariolocation
+        filename = tk.filedialog.askdirectory()
+        #print("pre fixed: ",filename)
+        scenariolocation = filename.replace("/","\\")
+        #filename = filename.replace(" ","") 
+        print(scenariolocation)
 
 
 class PageTwo(tk.Frame):
@@ -154,17 +165,14 @@ class PageThree(tk.Frame):
         self.ok_button = ttk.Button(self, text="OK", command=self.ok)
         self.ok_button.pack()
 
-
         canvas = FigureCanvasTkAgg(fig, self)
 
-        #c1 = mplcursors.cursor(dots, hover=True)
-
         canvas.draw()
-        #canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
         toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.update()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=1)
+        
     def ok(self):
         print("value is: " + self.variable.get())
         global selection
@@ -174,6 +182,6 @@ class PageThree(tk.Frame):
         ani.event_source.stop()
 
 app = SeaofBTCapp()
-app.geometry("1600x800")
+app.geometry("800x800")
 app.mainloop()
         
