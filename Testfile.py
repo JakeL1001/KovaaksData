@@ -1,60 +1,28 @@
-import tkinter
-
-from matplotlib.backends.backend_tkagg import (
-    FigureCanvasTkAgg, NavigationToolbar2Tk)
-# Implement the default Matplotlib key bindings.
-from matplotlib.backend_bases import key_press_handler
-from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-import pandas as pd
-
 import numpy as np
 import mplcursors
 
-def just_date(x):
-    return x[0:10]
+fig, axes = plt.subplots(ncols=2)
 
-root = tkinter.Tk()
-root.wm_title("Embedding in Tk")
+left_artist = axes[0].plot(range(11))
+axes[0].set(title="No box, different position", aspect=1)
 
-fig = Figure()
+right_artist = axes[1].imshow(np.arange(100).reshape(10, 10))
+axes[1].set(title="Fancy white background")
 
-df = pd.read_csv("C:\\Users\\jakee\\Desktop\\Kovaaks\\1wall9000targets.csv")
-df = df.reset_index()
-df["Time"] = df["Time"].apply(just_date)
-count = df.count
-a = fig.add_subplot(111)
-#dots = a.scatter(x=df["index"],y=df["Score"])
-dots = a.scatter(x=df["Time"],y=df["Score"])
-a.plot(df["index"],df["Score"])
-a.grid()
-a.tick_params(axis="x", direction="out", labelrotation=90, length=10)
+# Make the text pop up "underneath" the line and remove the box...
+c1 = mplcursors.cursor(left_artist)
+@c1.connect("add")
+def _(sel):
+    sel.annotation.set(position=(15, -15))
+    # Note: Needs to be set separately due to matplotlib/matplotlib#8956.
+    sel.annotation.set_bbox(None)
 
-canvas = FigureCanvasTkAgg(fig, master=root)
+# Make the box have a white background with a fancier connecting arrow
+c2 = mplcursors.cursor(right_artist)
+@c2.connect("add")
+def _(sel):
+    sel.annotation.get_bbox_patch().set(fc="white")
+    sel.annotation.arrow_patch.set(arrowstyle="simple", fc="white", alpha=.5)
 
-c1 = mplcursors.cursor(dots, hover=True)
-
-canvas.draw()
-canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
-
-toolbar = NavigationToolbar2Tk(canvas, root)
-toolbar.update()
-canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
-
-
-def on_key_press(event):
-    print("you pressed {}".format(event.key))
-    key_press_handler(event, canvas, toolbar)
-
-
-canvas.mpl_connect("key_press_event", on_key_press)
-
-
-def _quit():
-    root.quit()
-    root.destroy()  
-
-button = tkinter.Button(master=root, text="Quit", command=_quit)
-button.pack(side=tkinter.BOTTOM)
-
-tkinter.mainloop()
+plt.show()

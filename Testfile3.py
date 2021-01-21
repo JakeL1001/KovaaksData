@@ -11,9 +11,19 @@ from matplotlib.figure import Figure
 import tkinter as tk
 from tkinter import ttk
 
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
+# Implement the default Matplotlib key bindings.
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import pandas as pd
+
+import numpy as np
+import mplcursors
 
 LARGE_FONT= ("Verdana", 12)
-
+csv = "C:\\Users\\jakee\\Desktop\\Kovaaks\\gp_far_long_strafes.csv"
 
 class SeaofBTCapp(tk.Tk):
 
@@ -111,17 +121,50 @@ class PageThree(tk.Frame):
                             command=lambda: controller.show_frame(StartPage))
         button1.pack()
 
-        f = Figure(figsize=(5,5), dpi=100)
-        a = f.add_subplot(111)
-        a.plot([1,2,3,4,5,6,7,8],[5,6,1,3,8,9,3,5])
+        fig = Figure()
 
-        canvas = FigureCanvasTkAgg(f, self)
-        canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH)
+        def create_scatter(csv):
+            df = pd.read_csv(csv).reset_index()
+            a = fig.add_subplot(111)
+            dots = a.scatter(x=df["Time"],y=df["Score"])
+            a.plot(df["Time"],df["Score"])
+            a.grid()
+            a.tick_params(axis="x", direction="out", labelrotation=90, length=1)
+            items = df["Score"].to_numpy()
+            numItems = np.arange(1, len(items)+1, 1)
+            m,b = np.polyfit(numItems, items, 1)
+            a.plot(numItems,m*numItems + b)
 
-        toolbar = NavigationToolbar2Tk(canvas, self)
-        toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH)
+            canvas = FigureCanvasTkAgg(fig, master=frame)
+
+            c1 = mplcursors.cursor(dots, hover=True)
+
+            canvas.draw()
+            #canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+
+            toolbar = NavigationToolbar2Tk(canvas, frame)
+            toolbar.update()
+            canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+
+
+            def on_key_press(event):
+                print("you pressed {}".format(event.key))
+                key_press_handler(event, canvas, toolbar)
+
+
+            canvas.mpl_connect("key_press_event", on_key_press)
+
+
+            def _quit():
+                root.quit()
+                root.destroy()  
+
+            button = tkinter.Button(master=root, text="Quit", command=_quit)
+            button.pack(side=tkinter.BOTTOM)
+
+            tkinter.mainloop()
+
+        create_scatter(csv)
 
         
 
