@@ -22,7 +22,7 @@ warnings.simplefilter('ignore', np.RankWarning)
 
 from os import listdir
 from os.path import isfile, join
-mypath = "C:\\Users\\jakee\\Desktop\\Kovaaks\\"
+mypath = "C:\\Users\\jakee\\Desktop"#\\Kovaaks\\"
 OPTIONS = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
 LARGE_FONT= ("Verdana", 12)
@@ -114,20 +114,28 @@ class PageOne(tk.Frame):
         label = tk.Label(self, text="Page One!!!", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
-        
         button1 = ttk.Button(self, text="Back to Home",
                             command=lambda: controller.show_frame(StartPage))
         button1.pack()
 
-        button2 = ttk.Button(self, text="browse files", command=self.browseFiles)
+        button2 = ttk.Button(self, text="Select Scenario Folder", command=self.browseFiles)
         button2.pack()
-        
+
+        button3 = ttk.Button(self, text="Select Output Folder", command=self.outputFiles)
+        button3.pack()
+
+    def outputFiles(self):
+        global mypath
+        mypath = tk.filedialog.askdirectory()
+        mypath = mypath.replace("/","\\") + "\\"
+        print(mypath)
+
     def browseFiles(self):
         global scenariolocation
         filename = tk.filedialog.askdirectory()
         #print("pre fixed: ",filename)
         scenariolocation = filename.replace("/","\\")
-        #filename = filename.replace(" ","") 
+        #filename = filename.replace(" ","")
         print(scenariolocation)
 
 
@@ -148,19 +156,18 @@ class PageTwo(tk.Frame):
 
 
 class PageThree(tk.Frame):
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="Graph Page!", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
-        button1 = ttk.Button(self, text="Back to Home",
+        self.button1 = ttk.Button(self, text="Back to Home",
                             command=lambda: controller.show_frame(StartPage))
-        button1.pack()
+        self.button1.pack()
 
-        self.variable = tk.StringVar(self)
-        self.variable.set(OPTIONS[0])
-        self.selection = ttk.Combobox(self, textvariable=self.variable, values=OPTIONS)
-        self.selection.pack()
+        self.button2 = ttk.Button(self, text="Drop Down Box", command=self.combobox)
+        self.button2.pack()
 
         self.ok_button = ttk.Button(self, text="OK", command=self.ok)
         self.ok_button.pack()
@@ -172,7 +179,19 @@ class PageThree(tk.Frame):
         toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.update()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=1)
-        
+
+    def combobox(self):
+        global OPTIONS
+        global selection
+        OPTIONS = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+        selection = OPTIONS[0]
+        self.button2.pack_forget()
+        #self.selectionbox.pack_forget()
+        self.variable = tk.StringVar(self)
+        self.variable.set(OPTIONS[0])
+        self.selectionbox = ttk.Combobox(self, textvariable=self.variable, values=OPTIONS)
+        self.selectionbox.pack()
+
     def ok(self):
         print("value is: " + self.variable.get())
         global selection
